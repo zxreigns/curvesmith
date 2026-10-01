@@ -6,7 +6,7 @@
   "description": "Design, simulate and publish Meteora Dynamic Bonding Curve configs. A preset marketplace for DBC launchpads.",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "vite",
