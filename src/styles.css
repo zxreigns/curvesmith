@@ -297,7 +297,8 @@ main { padding: 28px 0 40px; min-height: 70vh; }
 .lp-id b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* docs */
-.docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.docs-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.docs-grid > * { min-width: 0; }
 .docs-grid h3 { font-size: 17px; margin-bottom: 8px; }
 .docs-grid p { color: var(--muted); line-height: 1.6; font-size: 14px; }
 

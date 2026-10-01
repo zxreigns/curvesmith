@@ -4,3 +4,5 @@ dist
 .env*
 scripts/.last-run-*.json
 *.log
+scripts/.seed-run.json
+.shot.mjs

@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from '@solana/web3.js';
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk';
-import { cors } from './_lib';
+import { cors } from './_lib.js';
 
 const REGISTRY = new PublicKey('DhJrZQHhww7bUjBvzxdocFYd8ajgHzMpDcPFyJYvuJFm');
 const MEMO = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';

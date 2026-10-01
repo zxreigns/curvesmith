@@ -20,7 +20,7 @@ import { Connection } from '@solana/web3.js';
 const USDC_DEVNET = { symbol: 'USDC', mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU', decimals: 6 };
 const SOLQ = { symbol: 'SOL', mint: 'So11111111111111111111111111111111111111112', decimals: 9 };
 
-type Tab = 'curve' | 'fees' | 'graduation' | 'vesting';
+type PanelTab = 'curve' | 'fees' | 'graduation' | 'vesting';
 
 function initialDesign(): { d: Design; key: string } {
   const q = new URLSearchParams(window.location.hash.split('?')[1] || '');
@@ -34,7 +34,7 @@ export function Studio({ forkConfig, forkCluster }: { forkConfig?: string; forkC
   const init = useMemo(initialDesign, []);
   const { design, morphTo, patch, setDesign } = useDesign(init.d);
   const [active, setActive] = useState(init.key);
-  const [tab, setTab] = useState<Tab>('curve');
+  const [tab, setTab] = useState<PanelTab>('curve');
   const [snipe, setSnipe] = useState(5);
   const [exportOpen, setExportOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -148,7 +148,7 @@ export function Studio({ forkConfig, forkCluster }: { forkConfig?: string; forkC
         <div className="side">
           <div className="card">
             <div className="tabs">
-              {(['curve', 'fees', 'graduation', 'vesting'] as Tab[]).map((t) => (
+              {(['curve', 'fees', 'graduation', 'vesting'] as PanelTab[]).map((t) => (
                 <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>
                   {t === 'fees' ? 'Anti-snipe' : t[0].toUpperCase() + t.slice(1)}
                 </button>

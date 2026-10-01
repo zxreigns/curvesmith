@@ -1,5 +1,5 @@
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { cors } from './_lib';
+import { cors } from './_lib.js';
 
 /**
  * Sponsored devnet SOL so anyone can try the full flow without hunting for a faucet.

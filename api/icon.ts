@@ -1,4 +1,4 @@
-import { hue } from './_lib';
+import { hue } from './_lib.js';
 
 /** Deterministic token avatar: a forged gradient disc with the ticker. */
 export default function handler(req: { query: Record<string, string> }, res: { setHeader: (k: string, v: string) => void; status: (n: number) => { send: (b: string) => void } }) {

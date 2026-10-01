@@ -1,4 +1,4 @@
-import { cors } from './_lib';
+import { cors } from './_lib.js';
 
 /** Metaplex-style token metadata for tokens launched from Curvesmith. */
 export default function handler(

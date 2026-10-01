@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import { Keypair, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { resilientConnection, keypairSigner, sendAll } from '../src/core/chain';
+const kp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync(process.env.KEYPAIR!, 'utf8'))));
+const to = new PublicKey(process.argv[2]);
+const sol = Number(process.argv[3] || 1);
+const conn = resilientConnection();
+const tx = new Transaction().add(SystemProgram.transfer({ fromPubkey: kp.publicKey, toPubkey: to, lamports: Math.round(sol * LAMPORTS_PER_SOL) }));
+console.log(await sendAll(conn, keypairSigner(kp), [tx]));
+console.log('to balance', (await conn.getBalance(to)) / 1e9);

@@ -13,8 +13,9 @@
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "atlas": "node scripts/atlas-snapshot.mjs",
-    "seed": "node scripts/seed-devnet.mjs"
+    "atlas": "vite-node scripts/atlas-snapshot.ts",
+    "e2e": "vite-node scripts/e2e-devnet.ts",
+    "seed": "vite-node scripts/seed-devnet.ts"
   },
   "dependencies": {
     "@meteora-ag/dynamic-bonding-curve-sdk": "1.5.13",
