@@ -91,9 +91,14 @@ export function forkDesign(pc: PoolConfig, quote: { symbol: string; mint: string
   d.fees.durationSec = Math.max(1, Math.round(f.durationSec)) || 60;
   d.fees.periods = Math.max(1, f.periods);
   if (f.mode === 'rateLimiter') {
-    d.fees.endBps = d.fees.startBps;
+    // DBC no longer accepts the rate limiter on new configs: keep the base fee and express the
+    // size penalty as an exponential decay from a higher launch fee over the same window.
     d.fees.rlIncrementBps = Math.max(1, f.incBps);
     d.fees.rlReferenceAmount = f.ref / 10 ** quote.decimals || 1;
+    d.fees.mode = 'exponential';
+    d.fees.endBps = d.fees.startBps;
+    d.fees.startBps = Math.min(9900, d.fees.startBps + d.fees.rlIncrementBps * 8);
+    d.fees.periods = Math.max(2, Math.min(60, Math.round(d.fees.durationSec / 10)));
   }
   d.fees.dynamicFee = pc.poolFees.dynamicFee.initialized === 1;
   d.fees.creatorSharePct = pc.creatorTradingFeePercentage;

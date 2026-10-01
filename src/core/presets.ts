@@ -39,11 +39,11 @@ export const PRESETS: Preset[] = [
     d.weights = shapes.band(0.62, 0.16);
     d.initialMarketCap = 120;
     d.migrationMarketCap = 260;
-    d.fees.mode = 'rateLimiter';
+    d.fees.mode = 'exponential';
+    d.fees.startBps = 5000;
     d.fees.endBps = 100;
-    d.fees.rlIncrementBps = 25;
-    d.fees.rlReferenceAmount = 2;
     d.fees.durationSec = 600;
+    d.fees.periods = 20;
   }),
   make('tiers', 'Two-Tier', 'Community tranche, then a wall', 'A cheap first tier for early supporters, then deliberately thin liquidity so latecomers pay up.', (d) => {
     d.weights = shapes.steps();

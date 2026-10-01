@@ -179,7 +179,6 @@ export function Studio({ forkConfig, forkCluster }: { forkConfig?: string; forkC
                   options={[
                     { v: 'exponential', label: 'Exp. decay' },
                     { v: 'linear', label: 'Linear decay' },
-                    { v: 'rateLimiter', label: 'Rate limiter' },
                   ]}
                   onChange={(v) =>
                     patch((d) => {
