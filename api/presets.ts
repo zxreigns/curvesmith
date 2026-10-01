@@ -5,6 +5,7 @@ import { cors } from './_lib.js';
 const REGISTRY = new PublicKey('DhJrZQHhww7bUjBvzxdocFYd8ajgHzMpDcPFyJYvuJFm');
 const MEMO = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 const PREFIX = 'curvesmith:v1:';
+const HIDDEN = new Set(['76yzLf7f2V3WoHdEZzaAAatKCXLJDqogyGa6em2xZHaL']);
 const SOL = 'So11111111111111111111111111111111111111112';
 const RPC = process.env.DEVNET_RPC || 'https://api.devnet.solana.com';
 
@@ -26,7 +27,7 @@ export default async function handler(
         if (!text.startsWith(PREFIX)) continue;
         try {
           const m = JSON.parse(text.slice(PREFIX.length));
-          if (!entries.some((e) => e.config === m.config))
+          if (!HIDDEN.has(m.config) && !entries.some((e) => e.config === m.config))
             entries.push({ config: m.config, name: m.name, tagline: m.tagline ?? '', author: tx!.transaction.message.accountKeys[0].pubkey.toBase58(), listedAt: sigs[i].blockTime ?? null });
         } catch {
           /* skip */
@@ -38,29 +39,29 @@ export default async function handler(
       quoteMint: PublicKey;
       migrationQuoteThreshold: { toString(): string };
     } | null>;
-    const out = await Promise.all(
-      entries.map(async (e, i) => {
-        const pc = configs[i];
-        let launches = 0;
-        let graduated = 0;
-        try {
-          const pools = await client.state.getPoolsByConfig(e.config);
-          launches = pools.length;
-          graduated = pools.filter((p) => p.account.poolState.isMigrated === 1).length;
-        } catch {
-          /* rate limited: leave zeros */
-        }
-        const sol = pc?.quoteMint.toBase58() === SOL;
-        return {
-          ...e,
-          quote: sol ? 'SOL' : pc?.quoteMint.toBase58() ?? null,
-          raise: pc ? Number(pc.migrationQuoteThreshold.toString()) / (sol ? 1e9 : 1e6) : null,
-          launches,
-          graduated,
-          studio: `/#/preset/${e.config}`,
-        };
-      }),
-    );
+    const out = [];
+    // sequential: the public devnet RPC rate-limits parallel program scans
+    for (const [i, e] of entries.entries()) {
+      const pc = configs[i];
+      let launches = 0;
+      let graduated = 0;
+      try {
+        const pools = await client.state.getPoolsByConfig(e.config);
+        launches = pools.length;
+        graduated = pools.filter((p) => p.account.poolState.isMigrated === 1).length;
+      } catch {
+        /* rate limited: leave zeros */
+      }
+      const sol = pc?.quoteMint.toBase58() === SOL;
+      out.push({
+        ...e,
+        quote: sol ? 'SOL' : (pc?.quoteMint.toBase58() ?? null),
+        raise: pc ? Number(pc.migrationQuoteThreshold.toString()) / (sol ? 1e9 : 1e6) : null,
+        launches,
+        graduated,
+        studio: `/#/preset/${e.config}`,
+      });
+    }
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
     res.status(200).json({ cluster: 'devnet', registry: REGISTRY.toBase58(), presets: out });
   } catch (e) {

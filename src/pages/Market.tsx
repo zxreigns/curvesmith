@@ -2,7 +2,8 @@ import { useWallet } from '../wallet';
 import { loadMarket, useAsync } from '../lib/data';
 import { Spark } from '../components/Spark';
 import { fmt, short } from '../lib/format';
-import { REGISTRY, explorer } from '../core/chain';
+import { REGISTRY, explorer, client } from '../core/chain';
+import type { Connection } from '@solana/web3.js';
 
 export function Market() {
   const { connection } = useWallet();
@@ -53,7 +54,9 @@ export function Market() {
                 </div>
               )}
               <div className="pc-foot">
-                <span className="muted">by {short(p.author)}</span>
+                <span className="muted">
+                  by {short(p.author)} · <Launches config={p.config} />
+                </span>
                 <span className="muted">{p.time ? new Date(p.time * 1000).toLocaleDateString() : ''}</span>
               </div>
             </a>
@@ -61,5 +64,32 @@ export function Market() {
         </div>
       )}
     </div>
+  );
+}
+
+const launchCache = new Map<string, Promise<{ n: number; grad: number }>>();
+let queue = Promise.resolve();
+function countLaunches(conn: Connection, config: string) {
+  if (!launchCache.has(config)) {
+    // one at a time: public devnet RPC rate-limits bursts of program scans
+    const p = queue.then(async () => {
+      const pools = await client(conn).state.getPoolsByConfig(config);
+      return { n: pools.length, grad: pools.filter((x) => x.account.poolState.isMigrated === 1).length };
+    });
+    queue = p.then(() => undefined, () => undefined);
+    launchCache.set(config, p);
+  }
+  return launchCache.get(config)!;
+}
+
+function Launches({ config }: { config: string }) {
+  const { connection } = useWallet();
+  const { data } = useAsync(() => countLaunches(connection, config), [config]);
+  if (!data) return <span className="muted">…</span>;
+  return (
+    <span>
+      {data.n} launch{data.n === 1 ? '' : 'es'}
+      {data.grad > 0 && <span className="grad-note"> · {data.grad} graduated</span>}
+    </span>
   );
 }

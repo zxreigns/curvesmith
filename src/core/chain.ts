@@ -186,6 +186,9 @@ export interface RegistryEntry {
   time: number | null;
 }
 
+/** Listings hidden from the market UI (QA runs that listed a duplicate). They stay on-chain. */
+export const HIDDEN_CONFIGS = new Set(['76yzLf7f2V3WoHdEZzaAAatKCXLJDqogyGa6em2xZHaL']);
+
 /** Rebuild the marketplace from chain history. */
 export async function readRegistry(conn: Connection, limit = 200): Promise<RegistryEntry[]> {
   const sigs = await conn.getSignaturesForAddress(REGISTRY, { limit });
@@ -205,6 +208,7 @@ export async function readRegistry(conn: Connection, limit = 200): Promise<Regis
         if (!text.startsWith(MEMO_PREFIX)) continue;
         try {
           const parsed = JSON.parse(text.slice(MEMO_PREFIX.length));
+          if (HIDDEN_CONFIGS.has(parsed.config)) continue;
           out.push({
             config: parsed.config,
             meta: parsed,

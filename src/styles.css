@@ -208,7 +208,7 @@ main { padding: 28px 0 40px; min-height: 70vh; }
 .wallet-opt { display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); color: var(--text); border-radius: 12px; padding: 12px; font: 600 14px Inter; cursor: pointer; }
 .wallet-opt:hover { border-color: var(--line2); background: rgba(255, 255, 255, 0.05); }
 .wallet-opt img { border-radius: 8px; }
-.pill { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: rgba(255, 194, 75, 0.12); color: var(--hot2); border: 1px solid rgba(255, 194, 75, 0.3); margin-left: auto; white-space: nowrap; }
+.pill { align-self: flex-start; line-height: 1.3; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: rgba(255, 194, 75, 0.12); color: var(--hot2); border: 1px solid rgba(255, 194, 75, 0.3); margin-left: auto; white-space: nowrap; }
 .pill.cool { background: rgba(94, 225, 255, 0.1); color: var(--cool); border-color: rgba(94, 225, 255, 0.3); }
 
 /* ---------- pages ---------- */
@@ -321,3 +321,5 @@ main { padding: 28px 0 40px; min-height: 70vh; }
   .atlas-row { grid-template-columns: 1fr 1fr; }
   .atlas-row > :nth-child(3), .atlas-row > :nth-child(4) { display: none; }
 }
+
+.grad-note { color: var(--cool); }

@@ -3,11 +3,12 @@ export function fmt(n: number, digits = 2): string {
   if (!isFinite(n)) return '—';
   const a = Math.abs(n);
   if (a === 0) return '0';
-  if (a >= 1e9) return (n / 1e9).toFixed(digits) + 'B';
-  if (a >= 1e6) return (n / 1e6).toFixed(digits) + 'M';
-  if (a >= 1e4) return (n / 1e3).toFixed(digits) + 'K';
+  const trim = (s: string) => (s.includes('.') ? s.replace(/\.?0+$/, '') : s);
+  if (a >= 1e9) return trim((n / 1e9).toFixed(digits)) + 'B';
+  if (a >= 1e6) return trim((n / 1e6).toFixed(digits)) + 'M';
+  if (a >= 1e4) return trim((n / 1e3).toFixed(digits)) + 'K';
   if (a >= 100) return n.toFixed(0);
-  if (a >= 1) return n.toFixed(digits);
+  if (a >= 1) return trim(n.toFixed(digits));
   if (a >= 0.001) return n.toPrecision(3);
   return fmtPrice(n);
 }
