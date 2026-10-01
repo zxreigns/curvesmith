@@ -94,7 +94,7 @@ export function PoolPage({ address }: { address: string }) {
       const raw = new BN(Math.floor(n * 10 ** (side === 'buy' ? qd : bd)).toString());
       const r = await swap(connection, signer, v, raw, side === 'sell', 500, (sig) => toast.update(t, { body: 'Confirming…', sig }));
       const got = Number(r.quote.out.toString()) / 10 ** (side === 'buy' ? bd : qd);
-      toast.update(t, { kind: 'ok', title: side === 'buy' ? `Bought ${fmt(got)} ${meta?.symbol ?? ''}` : `Sold for ${fmt(got)} ${qs}`, sig: r.sigs[0] });
+      toast.update(t, { kind: 'ok', title: side === 'buy' ? `Bought ${fmt(got)} ${meta?.symbol ?? ''}` : `Sold for ${fmt(got)} ${qs}`, body: 'Confirmed on devnet', sig: r.sigs[0] });
       await refresh();
       refreshBalance();
     } catch (e) {
@@ -111,7 +111,7 @@ export function PoolPage({ address }: { address: string }) {
     const t = toast.push({ kind: 'pending', title: 'Graduating into DAMM v2', body: 'Approve in your wallet…' });
     try {
       const sigs = await graduate(connection, signer, v, (sig) => toast.update(t, { body: 'Seeding the DAMM v2 pool…', sig }));
-      toast.update(t, { kind: 'ok', title: 'Graduated. Now trading on DAMM v2', sig: sigs[sigs.length - 1] });
+      toast.update(t, { kind: 'ok', title: 'Graduated. Now trading on DAMM v2', body: 'Liquidity migrated and locked as configured.', sig: sigs[sigs.length - 1] });
       setCelebrate(true);
       setTimeout(() => setCelebrate(false), 4200);
       await refresh();

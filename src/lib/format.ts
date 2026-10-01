@@ -9,7 +9,7 @@ export function fmt(n: number, digits = 2): string {
   if (a >= 100) return n.toFixed(0);
   if (a >= 1) return n.toFixed(digits);
   if (a >= 0.001) return n.toPrecision(3);
-  return n.toExponential(2);
+  return fmtPrice(n);
 }
 
 /** 0.0₇123 style for tiny prices (the way trading terminals show them). */

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAsync } from '../lib/data';
 import { bpsPct, dur, fmt, short } from '../lib/format';
 import { explorer } from '../core/chain';
@@ -81,7 +82,7 @@ export function Atlas() {
               <span>of the top {data.launchpads.length} graduate to DAMM v2</span>
             </div>
             <div className="insight">
-              <b>{fmt(data.insights.medianRaiseSol)} SOL</b>
+              <b>{Math.round(data.insights.medianRaiseSol)} SOL</b>
               <span>median raise to graduate</span>
             </div>
             <div className="insight">
@@ -101,11 +102,11 @@ export function Atlas() {
             {data.launchpads.map((l) => (
               <div key={l.config} className="atlas-row">
                 <div className="lp-id">
-                  {l.logo ? <img src={l.logo} alt="" width={34} height={34} loading="lazy" onError={(e) => ((e.target as HTMLImageElement).style.visibility = 'hidden')} /> : <span className="lp-ph">{l.name[0]}</span>}
+                  <LpLogo name={l.name} logo={l.logo} />
                   <div>
                     <b>{l.name}</b>
                     <span className="muted small">
-                      {fmt(l.configCount, 1)} configs · {l.distinctCurves} curve{l.distinctCurves > 1 ? 's' : ''} in sample
+                      {l.configCount.toLocaleString('en-US')} configs · {l.distinctCurves} curve{l.distinctCurves > 1 ? 's' : ''} in sample
                     </span>
                   </div>
                 </div>
@@ -148,4 +149,10 @@ export function Atlas() {
       )}
     </div>
   );
+}
+
+function LpLogo({ name, logo }: { name: string; logo: string }) {
+  const [broken, setBroken] = useState(!logo);
+  if (broken) return <span className="lp-ph">{name.trim()[0]?.toUpperCase()}</span>;
+  return <img src={logo} alt="" width={34} height={34} loading="lazy" onError={() => setBroken(true)} />;
 }

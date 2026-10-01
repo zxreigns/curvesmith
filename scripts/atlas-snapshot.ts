@@ -141,6 +141,10 @@ for (const p of top) {
   await sleep(150);
 }
 
+// drop rows we cannot read honestly: unknown quote decimals, test configs, curves that never reach their threshold
+const plausible = (o: (typeof out)[number]) =>
+  !['test', 'tests', 'demo'].includes(o.name.trim().toLowerCase()) && o.quote !== 'OTHER' && o.startMcap > 0.05 && o.raise >= 0.5 && o.gradMcap / o.startMcap <= 1000;
+out.splice(0, out.length, ...out.filter(plausible));
 const sol = out.filter((o) => o.quote === 'SOL');
 const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : 0);
 const snapshot = {
