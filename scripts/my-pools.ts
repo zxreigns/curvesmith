@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import { Connection, Keypair } from '@solana/web3.js';
+import { client, DEVNET_RPC } from '../src/core/chain';
+const kp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync(process.env.KEYPAIR!, 'utf8'))));
+const conn = new Connection(process.env.RPC || DEVNET_RPC, 'confirmed');
+const c = client(conn);
+const pools = await c.state.getPoolsByCreator(kp.publicKey);
+for (const p of pools) console.log('pool', p.publicKey.toBase58(), 'config', p.account.poolState.config.toBase58(), 'mint', p.account.poolState.baseMint.toBase58(), 'migrated', p.account.poolState.isMigrated, 'quote', p.account.poolState.quoteReserve.toString());
+const cfgs = await c.state.getPoolConfigsByOwner(kp.publicKey);
+console.log('configs', cfgs.map((x) => x.publicKey.toBase58()));

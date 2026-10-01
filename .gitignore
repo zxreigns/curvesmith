@@ -1,0 +1,6 @@
+node_modules
+dist
+.vercel
+.env*
+scripts/.last-run-*.json
+*.log
