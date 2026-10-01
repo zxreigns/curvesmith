@@ -113,6 +113,7 @@ for (const p of top) {
   ).catch(() => []);
   const fee = feeSummary(rep.pc);
   const step = Math.max(1, Math.floor(a.samples.length / 48));
+  const rawInfo = infos[sample.indexOf(rep.address)];
   out.push({
     name: p.name,
     website: p.website,
@@ -135,6 +136,7 @@ for (const p of top) {
     creatorFeePct: rep.pc.creatorTradingFeePercentage,
     migration: rep.pc.migrationOption === 1 ? 'DAMM v2' : 'DAMM v1',
     lockedLpPct: rep.pc.partnerPermanentLockedLiquidityPercentage + rep.pc.creatorPermanentLockedLiquidityPercentage,
+    raw: rawInfo ? Buffer.from(rawInfo.data).toString('base64') : null, // the config itself, so the Studio can fork it with no RPC
     samples: a.samples.filter((_, i) => i % step === 0 || i === a.samples.length - 1).map((s) => [Number(s.basePct.toFixed(3)), Number(s.mcap.toPrecision(5))]),
   });
   console.log(p.name, p.configs.length, 'configs,', groups.size, 'curves, rep pools', pools.length);

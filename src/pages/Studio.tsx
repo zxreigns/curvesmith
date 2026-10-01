@@ -14,8 +14,9 @@ import { humanError, Modal, Segmented, Slider, Stat, useToast } from '../compone
 import { bpsPct, dur, fmt, fmtPrice, pct, short } from '../lib/format';
 import { decodeDesign, encodeDesign, useDesign } from '../lib/useDesign';
 import { useWallet } from '../wallet';
-import { client, explorer, MAINNET_RPC } from '../core/chain';
+import { client, explorer } from '../core/chain';
 import { Connection } from '@solana/web3.js';
+import type { PoolConfig } from '@meteora-ag/dynamic-bonding-curve-sdk';
 
 const USDC_DEVNET = { symbol: 'USDC', mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU', decimals: 6 };
 const SOLQ = { symbol: 'SOL', mint: 'So11111111111111111111111111111111111111112', decimals: 9 };
@@ -44,10 +45,8 @@ export function Studio({ forkConfig, forkCluster }: { forkConfig?: string; forkC
   // fork an on-chain config (from the Atlas or the market) straight into the studio
   useEffect(() => {
     if (!forkConfig) return;
-    const conn = forkCluster === 'mainnet' ? new Connection(MAINNET_RPC, 'confirmed') : connection;
     const name = new URLSearchParams(window.location.hash.split('?')[1] || '').get('name') || 'Forked curve';
-    client(conn)
-      .state.getPoolConfig(forkConfig)
+    loadForkConfig(forkConfig, forkCluster === 'mainnet' ? 'mainnet' : 'devnet', connection)
       .then((pc) => {
         if (!pc) throw new Error('Config not found');
         const quote = pc.quoteMint.toBase58() === SOLQ.mint ? SOLQ : { symbol: 'QUOTE', mint: pc.quoteMint.toBase58(), decimals: 6 };
@@ -466,6 +465,35 @@ function PublishModal({ open, onClose, d }: { open: boolean; onClose: () => void
 }
 
 /** Keep memos small: the weights rounded and the knobs that matter. */
+/**
+ * Read a PoolConfig to fork. Mainnet configs from the Atlas ship inside the snapshot (public RPCs refuse
+ * browser reads), anything else goes through the server-side reader, then straight devnet RPC.
+ */
+async function loadForkConfig(address: string, cluster: 'mainnet' | 'devnet', connection: Connection): Promise<PoolConfig | null> {
+  const coder = client(connection).state.program.coder.accounts;
+  const decode = (b64: string) => coder.decode('poolConfig', Buffer.from(b64, 'base64')) as PoolConfig;
+  if (cluster === 'mainnet') {
+    try {
+      const atlas = await (await fetch('/atlas.json')).json();
+      const hit = atlas.launchpads?.find((l: { config: string; raw?: string }) => l.config === address && l.raw);
+      if (hit) return decode(hit.raw);
+    } catch {
+      /* fall through */
+    }
+  }
+  try {
+    const r = await fetch(`/api/account?address=${address}&cluster=${cluster}`);
+    if (r.ok) {
+      const j = await r.json();
+      if (j.data) return decode(j.data);
+    }
+  } catch {
+    /* fall through */
+  }
+  if (cluster === 'devnet') return client(connection).state.getPoolConfig(address);
+  throw new Error('Mainnet RPC is not reachable from here right now');
+}
+
 export function compactDesign(d: Design): Partial<Design> {
   return {
     weights: d.weights.map((w) => Number(w.toFixed(2))),
