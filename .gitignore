@@ -6,3 +6,6 @@ scripts/.last-run-*.json
 *.log
 scripts/.seed-run.json
 .shot.mjs
+.*.mjs
+scripts/dbg.ts
+scripts/chk.ts
