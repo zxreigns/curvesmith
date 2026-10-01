@@ -61,12 +61,11 @@ export function builderParams(input: Design) {
           baseFeeMode: (f.mode === 'linear' ? BaseFeeMode.FeeSchedulerLinear : BaseFeeMode.FeeSchedulerExponential) as
             | BaseFeeMode.FeeSchedulerLinear
             | BaseFeeMode.FeeSchedulerExponential,
-          feeSchedulerParam: {
-            startingFeeBps: f.startBps,
-            endingFeeBps: f.endBps,
-            numberOfPeriod: f.periods,
-            totalDuration: f.durationSec,
-          },
+          // a launch fee no higher than the settled fee is a flat fee: the program wants no schedule at all
+          feeSchedulerParam:
+            f.startBps <= f.endBps
+              ? { startingFeeBps: f.endBps, endingFeeBps: f.endBps, numberOfPeriod: 0, totalDuration: 0 }
+              : { startingFeeBps: f.startBps, endingFeeBps: f.endBps, numberOfPeriod: f.periods, totalDuration: f.durationSec },
         };
   const vest = d.vesting;
   return {
