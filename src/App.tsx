@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Studio } from './pages/Studio';
 import { Market } from './pages/Market';
 import { PresetPage } from './pages/PresetPage';
@@ -82,6 +82,7 @@ function Shell() {
         </span>
       </footer>
       <WalletPicker />
+      <AutoFund />
     </div>
   );
 }
@@ -137,30 +138,53 @@ function WalletButton() {
   );
 }
 
-function FundButton() {
+function useDrip() {
   const { signer, refreshBalance } = useWallet();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const drip = useCallback(
+    async (auto = false) => {
+      if (!signer) return;
+      setBusy(true);
+      const t = toast.push({ kind: 'pending', title: auto ? 'Funding your burner wallet' : 'Requesting devnet SOL', body: auto ? 'Free devnet SOL so you can publish, launch and trade right away.' : undefined });
+      try {
+        const r = await fetch(`/api/drip?to=${signer.publicKey.toBase58()}`, { method: 'POST' });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || 'Faucet unavailable');
+        toast.update(t, { kind: 'ok', title: `${j.amount} devnet SOL on the way`, sig: j.sig });
+        setTimeout(refreshBalance, 2500);
+        setTimeout(refreshBalance, 7000);
+      } catch (e) {
+        toast.update(t, { kind: 'err', title: 'Faucet said no', body: `${humanError(e)} You can also use faucet.solana.com.` });
+      } finally {
+        setBusy(false);
+      }
+    },
+    [signer, refreshBalance, toast],
+  );
+  return { drip, busy };
+}
+
+/** A fresh burner wallet gets devnet SOL automatically, once, so the first click is never a dead end. */
+function AutoFund() {
+  const { signer, walletName, balance } = useWallet();
+  const { drip } = useDrip();
+  useEffect(() => {
+    if (!signer || walletName !== 'Burner wallet' || balance === null || balance > 0.02) return;
+    const k = `curvesmith:autofund:${signer.publicKey.toBase58()}`;
+    if (localStorage.getItem(k)) return;
+    localStorage.setItem(k, '1');
+    drip(true);
+  }, [signer, walletName, balance, drip]);
+  return null;
+}
+
+function FundButton() {
+  const { signer } = useWallet();
+  const { drip, busy } = useDrip();
   if (!signer) return null;
   return (
-    <button
-      disabled={busy}
-      onClick={async () => {
-        setBusy(true);
-        const t = toast.push({ kind: 'pending', title: 'Requesting devnet SOL' });
-        try {
-          const r = await fetch(`/api/drip?to=${signer.publicKey.toBase58()}`, { method: 'POST' });
-          const j = await r.json();
-          if (!r.ok) throw new Error(j.error || 'Faucet unavailable');
-          toast.update(t, { kind: 'ok', title: `${j.amount} devnet SOL on the way`, sig: j.sig });
-          setTimeout(refreshBalance, 2500);
-        } catch (e) {
-          toast.update(t, { kind: 'err', title: 'Faucet said no', body: `${humanError(e)} You can also use faucet.solana.com.` });
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
+    <button disabled={busy} onClick={() => drip(false)}>
       {busy ? 'Requesting…' : 'Get devnet SOL'}
     </button>
   );
